@@ -16,7 +16,7 @@ app = FastAPI(
 
 cors_origins = os.getenv(
     "CORS_ORIGINS",
-    "http://localhost:5173",
+    "https://netsage-il6w.onrender.com",
 )
 
 origins = [
