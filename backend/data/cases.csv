@@ -1,0 +1,36 @@
+case_id,category,symptom,topology,addressing,expected_fault,osi_layer,concept,severity
+NET-001,VLAN,PC cannot ping devices in VLAN 30,1 router + 2 switches + 4 PCs,VLAN 10: 192.168.10.0/24 VLAN 20: 192.168.20.0/24 VLAN 30: 192.168.30.0/24,VLAN 30 not created on SW2,Layer 2,VLAN configuration,HIGH
+NET-002,gateway,PC cannot reach default gateway,1 router + 1 switch + 2 PCs,PC1: 192.168.1.10/24 GW: 192.168.1.1 PC2: 192.168.1.20/24 GW: 192.168.1.1,PC1 has wrong gateway 192.168.1.254,Layer 3,Default gateway,MEDIUM
+NET-003,subnet,Inter-subnet communication fails,2 routers + 2 switches + 4 PCs,NetA: 192.168.1.0/24 NetB: 192.168.2.0/24,PC in NetA has /16 mask instead of /24,Layer 3,Subnet mask,HIGH
+NET-004,DHCP,PC not getting IP address,1 router + 1 switch + 2 PCs,DHCP pool: 192.168.1.0/24,DHCP pool excluded entire range,Layer 7,DHCP server,MEDIUM
+NET-005,DNS,Cannot resolve domain names,1 router + 1 switch + 1 PC + 1 DNS server,PC: 192.168.1.10/24 DNS: 192.168.1.5,PC DNS points to wrong IP 192.168.1.6,Layer 7,DNS resolution,MEDIUM
+NET-006,routing,Remote network unreachable,2 routers + 2 switches + 4 PCs,R1: 10.0.1.0/24 R2: 10.0.2.0/24,Missing static route on R1 to 10.0.2.0/24,Layer 3,Static routing,HIGH
+NET-007,inter-VLAN routing,Cannot communicate across VLANs,1 router-on-stick + 1 switch + 4 PCs,VLAN 10: 192.168.10.0/24 VLAN 20: 192.168.20.0/24,Subinterface missing encapsulation dot1Q,Layer 3,Router-on-a-stick,HIGH
+NET-008,ACL,Valid traffic being blocked,1 router + 1 switch + 2 PCs + 1 server,192.168.1.0/24,ACL applied inbound denying HTTP port 80,Layer 7,Access control lists,MEDIUM
+NET-009,NAT,Internal hosts cannot reach internet,1 router + 1 switch + 2 PCs,Inside: 192.168.1.0/24 Outside: 203.0.113.0/30,NAT inside interface not configured,Layer 3,NAT overload,HIGH
+NET-010,wireless,Wireless clients cannot connect,1 wireless router + 2 laptops,SSID: NetSage WPA2: secret123,Wireless security mode mismatch WPA vs WPA2,Layer 1,Wireless configuration,MEDIUM
+NET-011,interface,GigabitEthernet link down,2 routers connected directly,R1 Gi0/0: 10.1.1.1/30 R2 Gi0/0: 10.1.1.2/30,R2 interface administratively down,Layer 1,Interface status,HIGH
+NET-012,trunk,VLAN 20 traffic not passing between switches,2 switches + 4 PCs,VLAN 10 and 20 across switches,Trunk port set to access mode on SW1,Layer 2,Trunking,HIGH
+NET-013,VLAN,Voice VLAN not working,1 switch + 2 IP phones + 2 PCs,VLAN 10 data VLAN 100 voice,Voice VLAN not assigned to port,Layer 2,Voice VLAN,MEDIUM
+NET-014,gateway,Inter-VLAN routing fails for one subnet,1 L3 switch + 2 switches + 4 PCs,VLAN 10: 192.168.10.0/24 VLAN 20: 192.168.20.0/24,SVI for VLAN 20 has wrong IP,Layer 3,SVI gateway,HIGH
+NET-015,subnet,Overlapping subnets causing routing issues,3 routers + 3 networks,NetA: 192.168.1.0/24 NetB: 192.168.2.0/24 NetC: 192.168.1.0/24,NetC uses same subnet as NetA,Layer 3,IP addressing,CRITICAL
+NET-016,DHCP,DHCP relay not working,2 routers + 2 switches + 4 PCs,DHCP server on R1 for 192.168.2.0/24,R2 missing ip helper-address,Layer 7,DHCP relay,MEDIUM
+NET-017,DNS,External DNS resolution fails,1 router + 1 switch + 1 PC + 1 DNS server,Internal DNS: 192.168.1.5 External: 8.8.8.8,Root hints missing on DNS server,Layer 7,DNS forwarding,MEDIUM
+NET-018,routing,OSPF neighbors not forming,3 routers in area 0,10.0.1.0/24 10.0.2.0/24 10.0.3.0/24,OSPF network type mismatch on serial link,Layer 3,OSPF routing,HIGH
+NET-019,inter-VLAN routing,VLAN 50 completely isolated,1 router + 1 L3 switch + 6 PCs,VLAN 10 20 30 40 50,No route for VLAN 50 on router,Layer 3,Inter-VLAN routing,HIGH
+NET-020,ACL,SSH access denied to router,1 router + 1 switch + 1 PC,Management VLAN: 192.168.99.0/24,ACL blocking TCP port 22,Layer 7,Secure management,MEDIUM
+NET-021,NAT,Port forwarding not working,1 router + 1 switch + 1 PC + 1 web server,Inside: 192.168.1.0/24 Server: 192.168.1.10,NAT overload without static NAT entry,Layer 3,Port address translation,HIGH
+NET-022,wireless,SSID not broadcasting,1 WAP + 2 laptops,SSID: CorpNet WPA2,SSID broadcast disabled accidentally,Layer 1,Wireless SSID,LOW
+NET-023,interface,Half-duplex mismatch causing collisions,2 switches connected,R1 Fa0/1: auto R2 Fa0/1: half,One side forced half other auto full,Layer 1,Duplex mismatch,MEDIUM
+NET-024,trunk,Native VLAN mismatch causing issues,2 switches + 4 PCs,VLAN 1 native VLAN 10 20 allowed,Native VLAN 1 on SW1 VLAN 99 on SW2,Layer 2,Native VLAN,HIGH
+NET-025,VLAN,Private VLAN not isolating hosts,1 switch + 3 PCs,VLAN 100 primary VLAN 101 isolated,VLAN mapping incorrect on ports,Layer 2,Private VLAN,MEDIUM
+NET-026,gateway,Floating static route not working,2 routers + 1 switch + 2 PCs,Primary: 10.1.1.0/30 Backup: 10.1.2.0/30,Administrative distance too low on backup,Layer 3,Floating static,MEDIUM
+NET-027,subnet,VLSM calculation error,1 router + 3 switches + 6 PCs,192.168.1.0/26 subnets,Subnet mask /26 on router /24 on PCs,Layer 3,VLSM,HIGH
+NET-028,DHCP,DHCP snooping blocking legitimate leases,1 switch + 1 router + 2 PCs,192.168.1.0/24,DHCP snooping trust not on router port,Layer 7,DHCP snooping,MEDIUM
+NET-029,DNS,Split DNS not resolving internal names,1 router + 1 DNS server + 2 PCs,Internal: corp.local External: internet,Forward lookup zone missing,Layer 7,Split DNS,HIGH
+NET-030,routing,BGP neighbor stuck in Active,2 routers (eBGP),AS 65001 and AS 65002,Wrong AS number configured on one side,Layer 3,BGP peering,HIGH
+NET-031,inter-VLAN routing,Router-on-stick subinterface down,1 router + 1 switch + 4 PCs,VLAN 10 20 30,Physical interface administratively down,Layer 3,Subinterface status,HIGH
+NET-032,ACL,Extended ACL applied wrong direction,1 router + 2 switches + 4 PCs,192.168.10.0/24 and 192.168.20.0/24,ACL applied outbound instead of inbound,Layer 7,ACL direction,MEDIUM
+NET-033,NAT,Dynamic NAT pool exhausted,1 router + 1 switch + 10 PCs,Pool: 203.0.113.1-203.0.113.5,Only 5 addresses for 10 hosts,Layer 3,NAT pool,HIGH
+NET-034,wireless,Wrong channel causing interference,2 WAPs + 4 laptops,Channel 6 on both APs,Both APs on same channel in overlap range,Layer 1,Wireless channels,LOW
+NET-035,interface,Interface speed mismatch,2 routers connected via serial,R1: 64000 R2: 56000,Clock rate mismatch on DCE/DTE,Layer 1,Serial interface,MEDIUM
