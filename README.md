@@ -1,88 +1,125 @@
-# NetSage AI Backend
+# NetSage AI
 
-NetSage AI is an enterprise-grade autonomous network troubleshooting backend engine built with FastAPI, SQLAlchemy, SQLite, Python `ipaddress`, OpenAI, and Pytest.
-
----
-
-## Key Features
-
-1. **Deterministic Network Rule Engine**:
-   - Evaluates 10 fundamental networking rules using Python's native `ipaddress` library and parser heuristics without invoking an LLM for deterministic math:
-     - `duplicate_ip`: Duplicate IP address conflict detection
-     - `invalid_subnet`: Subnet boundary, network address, and broadcast address checks
-     - `gateway_mismatch`: Default gateway subnet membership & router interface matching
-     - `interface_down`: Administratively down, line protocol down, and disabled port checks
-     - `missing_vlan`: Access ports configured for missing/inactive VLAN database IDs
-     - `trunk_vlan_mismatch`: Native VLAN mismatch & asymmetric allowed VLAN list detection
-     - `missing_route`: Destination network reachability & routing table lookup checks
-     - `acl_deny`: Packet drops and matches against explicit deny access-lists
-     - `dhcp_inconsistency`: DHCP pool subnet discrepancies, invalid default-routers, and conflict checks
-     - `nat_inconsistency`: Missing inside/outside NAT tags and translation overload policy checks
-
-2. **AI Diagnostic Service**:
-   - Grounded root-cause analysis using provided telemetry.
-   - Anti-hallucination constraints ensuring only supplied evidence is cited.
-   - Resilient fallback synthesis mechanism that works seamlessly offline without external API keys.
-
-3. **Evidence Correlation Engine**:
-   - Detects agreement, conflict, unsupported claims, missing evidence, and hallucinations by cross-checking AI output against deterministic rule findings and network telemetry.
-
-4. **Automated AI Evaluation**:
-   - Multi-dimensional scoring for root-cause correctness, evidence support, OSI layer alignment, diagnostic command quality, proposed fix safety, and confidence calibration.
-
-5. **Human Review Workflow**:
-   - Supports `ACCEPTED`, `EDITED`, and `REJECTED` verdicts with strict schema validation while strictly preserving the original AI diagnosis.
-
-6. **Dynamic Dashboard Metrics**:
-   - Live metrics calculated directly from database records (never hardcoded).
+NetSage AI is an enterprise-grade **autonomous network troubleshooting platform** for Cisco environments — a FastAPI backend (deterministic rule engine + AI diagnostics) paired with a React dashboard frontend (cases, diagnosis review, human-in-the-loop workflow).
 
 ---
 
-## Directory Structure
+## Project Structure
 
 ```
-netsage-backend/
-├── docs/
-│   └── api-contract.md             # REST API contract specification
-├── app/
-│   ├── main.py                     # FastAPI entrypoint, CORS, exception handlers
-│   ├── config.py                   # Environment settings & secrets handling
-│   ├── database.py                 # SQLAlchemy engine and session dependency
-│   ├── models/                     # Database Models (Case, Diagnosis, Evaluation, Review)
-│   ├── schemas/                    # Pydantic Schemas for requests and responses
-│   ├── rules/                      # 10 Deterministic Networking Rules & Rule Engine
-│   ├── services/                   # Business logic (Case, AI, Correlation, Evaluation, Review, Dashboard)
-│   └── api/                        # API route controllers
-├── tests/                          # 47 Unit, API, Rule & Integration Tests
-├── .env.example
-├── requirements.txt
+NETSAGE/
+├── backend/                    # FastAPI backend (Python)
+│   ├── app/
+│   │   ├── main.py             # FastAPI entrypoint, CORS, middleware
+│   │   ├── config.py           # Environment settings (.env)
+│   │   ├── database.py         # SQLAlchemy engine & session
+│   │   ├── api/                # Route controllers (cases, diagnoses, reviews, dashboard, health, packet-tracer)
+│   │   ├── models/             # DB models (Case, Diagnosis, Evaluation, Review)
+│   │   ├── schemas/            # Pydantic request/response schemas
+│   │   ├── rules/              # 10 deterministic networking rules + engine
+│   │   └── services/           # Business logic (case, AI, correlation, evaluation, review, dashboard)
+│   ├── tests/                  # Pytest suite (unit, API, rule & integration tests)
+│   ├── requirements.txt
+│   ├── .env.example
+│   └── README.md
+├── frontend/                   # React 18 + Vite + Tailwind CSS dashboard
+│   ├── public/                 # Static assets (favicon.svg)
+│   ├── src/
+│   │   ├── components/         # UI components
+│   │   ├── pages/              # Dashboard, Cases, NewCase, Diagnosis, HumanReview
+│   │   ├── context/            # CaseContext, ThemeContext
+│   │   ├── services/           # API client (api.js, mockData.js dev fallback)
+│   │   ├── hooks/              # useApi, useHealth
+│   │   └── utils/              # constants, formatters
+│   ├── index.html
+│   ├── vite.config.js          # Dev server with /api proxy to backend
+│   ├── package.json
+│   ├── .env.example
+│   └── README.md
+├── docs/                       # API contract & Packet Tracer integration docs
+├── scripts/                    # One-click run scripts (Windows .bat / Linux .sh)
+├── SETUP.md                    # Full step-by-step setup & troubleshooting guide
 └── README.md
 ```
 
 ---
 
-## Setup & Running
+## Quick Start (One Click)
 
-### 1. Install Dependencies
+**Windows:** double-click or run:
+```bat
+scripts\start-dev.bat
+```
+
+**Linux / macOS:**
 ```bash
+chmod +x scripts/*.sh
+./scripts/start-dev.sh
+```
+
+This installs everything on first run, then starts:
+| Service  | URL                              |
+|----------|----------------------------------|
+| Frontend | http://localhost:5173            |
+| Backend  | http://127.0.0.1:8000            |
+| API Docs | http://127.0.0.1:8000/docs       |
+
+> **Prerequisites:** Python 3.11+ and Node.js 18+
+
+---
+
+## Manual Setup
+
+### 1. Backend
+```bash
+cd backend
+python -m venv .venv
+.venv\Scripts\activate          # Windows   (Linux/macOS: source .venv/bin/activate)
 pip install -r requirements.txt
-```
-
-### 2. Configure Environment (Optional)
-Copy `.env.example` to `.env`:
-```bash
-cp .env.example .env
-```
-*(Note: An `OPENAI_API_KEY` is optional; if omitted, the built-in deterministic AI synthesis handles all diagnostic reasoning safely).*
-
-### 3. Run Development Server
-```bash
+copy .env.example .env          # Linux/macOS: cp .env.example .env
 uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
-- Interactive API Docs: `http://127.0.0.1:8000/docs`
-- Alternative ReDoc: `http://127.0.0.1:8000/redoc`
 
-### 4. Run Pytest Test Suite
+### 2. Frontend (new terminal)
 ```bash
-pytest -v --tb=short
+cd frontend
+npm install
+copy .env.example .env          # Linux/macOS: cp .env.example .env
+npm run dev
 ```
+
+Open **http://localhost:5173** — the Vite dev server proxies all `/api/*` calls to the backend, so no CORS setup is needed.
+
+---
+
+## Testing
+
+```bash
+# Backend test suite (from backend/ with venv active)
+pytest -v --tb=short
+
+# Frontend production build check (from frontend/)
+npm run build
+```
+
+---
+
+## Key Features
+
+1. **Deterministic Network Rule Engine** — 10 networking rules (`duplicate_ip`, `invalid_subnet`, `gateway_mismatch`, `interface_down`, `missing_vlan`, `trunk_vlan_mismatch`, `missing_route`, `acl_deny`, `dhcp_inconsistency`, `nat_inconsistency`) evaluated with Python's native `ipaddress` library.
+2. **AI Diagnostic Service** — grounded root-cause analysis with anti-hallucination constraints; deterministic offline fallback when no `OPENAI_API_KEY` is set.
+3. **Evidence Correlation Engine** — agreement / conflict / unsupported-claim / hallucination detection.
+4. **Automated AI Evaluation** — multi-dimensional scoring of every diagnosis.
+5. **Human Review Workflow** — `ACCEPTED` / `EDITED` / `REJECTED` verdicts with strict schema validation.
+6. **Dynamic Dashboard Metrics** — calculated live from database records, never hardcoded.
+7. **Cisco Packet Tracer Integration** — import CLI transcripts (TXT/CSV/JSON), diagnose imported evidence, verify fixes.
+
+---
+
+## Documentation
+
+- [`SETUP.md`](SETUP.md) — detailed setup steps, environment variables & troubleshooting
+- [`docs/api-contract.md`](docs/api-contract.md) — REST API contract
+- [`docs/packet-tracer-integration.md`](docs/packet-tracer-integration.md) — Packet Tracer integration guide
+- [`backend/README.md`](backend/README.md) / [`frontend/README.md`](frontend/README.md) — per-app details
+
