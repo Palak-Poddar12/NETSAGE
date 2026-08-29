@@ -1,51 +1,81 @@
-import os, json, openai
-from app.prompts import SYSTEM_PROMPT, build_diagnosis_prompt
-from dotenv import load_dotenv
+import json
+import os
+from typing import Any
 
-load_dotenv()
-client = openai.OpenAI(
-    api_key=os.getenv("OPENAI_API_KEY"),
-    timeout=60,
-    max_retries=2,
-)
-MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+from openai import OpenAI
 
-def diagnose(case, evidence_list, rule_findings):
-    prompt = build_diagnosis_prompt(case, evidence_list, rule_findings)
+from app.prompts import SYSTEM_PROMPT, USER_TEMPLATE
+from app.schemas import AIOutput
+
+
+class AIServiceError(Exception):
+    pass
+
+
+def _format_evidence(evidence: list[Any]) -> str:
+    if not evidence:
+        return "NO EVIDENCE SUPPLIED"
+    chunks = []
+    for item in evidence:
+        chunks.append(
+            f"[device={item.device} command={item.command} source={item.source}]\n"
+            f"{item.output}"
+        )
+    return "\n\n".join(chunks)
+
+
+def _format_rules(rule_findings: list[dict[str, Any]]) -> str:
+    if not rule_findings:
+        return "NO DETERMINISTIC FINDINGS"
+    return json.dumps(rule_findings, ensure_ascii=False, indent=2)
+
+
+def diagnose(case: Any, evidence: list[Any], rule_findings: list[dict[str, Any]]) -> AIOutput:
+    api_key = os.getenv("OPENAI_API_KEY", "").strip()
+    model = os.getenv("OPENAI_MODEL", "").strip()
+
+    if not api_key:
+        raise AIServiceError("OPENAI_API_KEY is not configured.")
+    if not model:
+        raise AIServiceError("OPENAI_MODEL is not configured.")
+
+    client = OpenAI(api_key=api_key, timeout=45.0)
+
+    user_prompt = USER_TEMPLATE.format(
+        case_id=case.case_id,
+        category=case.category,
+        symptom=case.symptom,
+        topology=case.topology,
+        addressing=case.addressing,
+        expected_fault=case.expected_fault,
+        osi_layer=case.osi_layer,
+        concept=case.concept,
+        severity=case.severity,
+        evidence=_format_evidence(evidence),
+        rule_findings=_format_rules(rule_findings),
+    )
+
     try:
-        resp = client.chat.completions.create(
-            model=MODEL,
+        response = client.chat.completions.create(
+            model=model,
+            temperature=0,
+            response_format={"type": "json_object"},
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": prompt},
+                {"role": "user", "content": user_prompt},
             ],
-            temperature=0.2,
-            response_format={"type": "json_object"},
         )
-        content = resp.choices[0].message.content
-        data = json.loads(content) if content else {}
-        data.setdefault("root_cause", "")
-        data.setdefault("category", "")
-        data.setdefault("osi_layer", "")
-        data.setdefault("confidence", 0)
-        data.setdefault("evidence", [])
-        data.setdefault("next_command", "")
-        data.setdefault("fix_steps", [])
-        data.setdefault("verification_command", "")
-        data.setdefault("human_review_required", True)
-        if not data.get("root_cause") and not data.get("evidence"):
-            data["root_cause"] = "INSUFFICIENT_EVIDENCE"
-            data["confidence"] = 0
-        return data
-    except Exception:
-        return {
-            "root_cause": "AI_ERROR",
-            "category": "",
-            "osi_layer": "",
-            "confidence": 0,
-            "evidence": [],
-            "next_command": "",
-            "fix_steps": [],
-            "verification_command": "",
-            "human_review_required": True,
-        }
+    except Exception as exc:
+        raise AIServiceError(f"OpenAI request failed: {exc}") from exc
+
+    content = response.choices[0].message.content if response.choices else None
+    if not content or not content.strip():
+        raise AIServiceError("OpenAI returned an empty response.")
+
+    try:
+        payload = json.loads(content)
+        result = AIOutput.model_validate(payload)
+    except (json.JSONDecodeError, ValueError) as exc:
+        raise AIServiceError(f"OpenAI returned invalid diagnosis JSON: {exc}") from exc
+
+    return result
