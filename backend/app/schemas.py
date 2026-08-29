@@ -17,7 +17,7 @@ class CaseOut(CaseCreate):
     id: int
     created_at: datetime
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 class EvidenceCreate(BaseModel):
     case_id: str
@@ -30,7 +30,7 @@ class EvidenceOut(EvidenceCreate):
     id: int
     created_at: datetime
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 class DiagnosisCreate(BaseModel):
     case_id: str
@@ -51,11 +51,11 @@ class DiagnosisOut(BaseModel):
     human_review_required: bool
     created_at: datetime
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 class ReviewCreate(BaseModel):
     diagnosis_id: int
-    status: str = Field(..., pattern="^(ACCEPTED|EDITED|REJECTED)$")
+    status: str = Field(..., regex="^(ACCEPTED|EDITED|REJECTED)$")
     corrected_diagnosis: Optional[str] = None
     reviewer_comment: Optional[str] = None
 
@@ -63,7 +63,7 @@ class ReviewOut(ReviewCreate):
     id: int
     created_at: datetime
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 class DashboardStats(BaseModel):
     total_cases: int
