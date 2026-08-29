@@ -3,6 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import os
 
+from app.database import init_db
+from app.routes import router
+
 load_dotenv()
 
 app = FastAPI(
@@ -29,6 +32,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(router)
+
+
+@app.on_event("startup")
+def startup():
+    init_db()
 
 
 @app.get("/api/health")
