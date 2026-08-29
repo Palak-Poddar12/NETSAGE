@@ -1,53 +1,107 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, Float
+from datetime import datetime, timezone
+
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import Mapped, mapped_column
+
 from app.database import Base
-from datetime import datetime
+
+
+def utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
 
 class Case(Base):
     __tablename__ = "cases"
-    id = Column(Integer, primary_key=True)
-    case_id = Column(String, unique=True, nullable=False)
-    category = Column(String, nullable=False)
-    symptom = Column(Text, nullable=False)
-    topology = Column(Text, nullable=False)
-    addressing = Column(Text, nullable=False)
-    expected_fault = Column(Text, nullable=False)
-    osi_layer = Column(String, nullable=False)
-    concept = Column(Text, nullable=False)
-    severity = Column(String, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    case_id: Mapped[str] = mapped_column(
+        String(100),
+        unique=True,
+        nullable=False,
+        index=True,
+    )
+    category: Mapped[str] = mapped_column(String(100), nullable=False)
+    symptom: Mapped[str] = mapped_column(Text, nullable=False)
+    topology: Mapped[str] = mapped_column(Text, nullable=False)
+    addressing: Mapped[str] = mapped_column(Text, nullable=False)
+    expected_fault: Mapped[str] = mapped_column(Text, nullable=False)
+    osi_layer: Mapped[str] = mapped_column(String(100), nullable=False)
+    concept: Mapped[str] = mapped_column(String(200), nullable=False)
+    severity: Mapped[str] = mapped_column(String(50), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utc_now,
+        nullable=False,
+    )
+
 
 class Evidence(Base):
     __tablename__ = "evidence"
-    id = Column(Integer, primary_key=True)
-    case_id = Column(String, nullable=False)
-    source = Column(String, nullable=False)
-    device = Column(String, nullable=False)
-    command = Column(String, nullable=False)
-    output = Column(Text, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    case_id: Mapped[str] = mapped_column(
+        String(100),
+        ForeignKey("cases.case_id"),
+        nullable=False,
+        index=True,
+    )
+    source: Mapped[str] = mapped_column(String(100), nullable=False)
+    device: Mapped[str] = mapped_column(String(100), nullable=False)
+    command: Mapped[str] = mapped_column(String(200), nullable=False)
+    output: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utc_now,
+        nullable=False,
+    )
+
 
 class Diagnosis(Base):
     __tablename__ = "diagnoses"
-    id = Column(Integer, primary_key=True)
-    case_id = Column(String, nullable=False)
-    root_cause = Column(Text)
-    category = Column(String)
-    osi_layer = Column(String)
-    confidence = Column(Float)
-    evidence = Column(Text)
-    rule_findings = Column(Text)
-    next_command = Column(String)
-    fix_steps = Column(Text)
-    verification_command = Column(String)
-    status = Column(String, default="PENDING")
-    human_review_required = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    case_id: Mapped[str] = mapped_column(
+        String(100),
+        ForeignKey("cases.case_id"),
+        nullable=False,
+        index=True,
+    )
+    root_cause: Mapped[str] = mapped_column(Text, nullable=False)
+    category: Mapped[str] = mapped_column(String(100), nullable=False)
+    osi_layer: Mapped[str] = mapped_column(String(100), nullable=False)
+    confidence: Mapped[float] = mapped_column(Float, nullable=False)
+    evidence: Mapped[str] = mapped_column(Text, nullable=False)
+    rule_findings: Mapped[str] = mapped_column(Text, nullable=False)
+    next_command: Mapped[str] = mapped_column(Text, nullable=False)
+    fix_steps: Mapped[str] = mapped_column(Text, nullable=False)
+    verification_command: Mapped[str] = mapped_column(Text, nullable=False)
+    status: Mapped[str] = mapped_column(String(50), nullable=False)
+    human_review_required: Mapped[bool] = mapped_column(nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utc_now,
+        nullable=False,
+    )
+
 
 class Review(Base):
     __tablename__ = "reviews"
-    id = Column(Integer, primary_key=True)
-    diagnosis_id = Column(Integer, nullable=False)
-    status = Column(String, nullable=False)
-    corrected_diagnosis = Column(Text)
-    reviewer_comment = Column(Text)
-    created_at = Column(DateTime, default=datetime.utcnow)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    diagnosis_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("diagnoses.id"),
+        nullable=False,
+        index=True,
+    )
+    status: Mapped[str] = mapped_column(String(50), nullable=False)
+    corrected_diagnosis: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
+    reviewer_comment: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utc_now,
+        nullable=False,
+    )
