@@ -1,41 +1,4 @@
-# ===== NetSage AI — Root .gitignore =====
-
-# Node / Frontend
-node_modules/
-frontend/dist/
-dist/
-*.local
-npm-debug.log*
-
-# Python / Backend
 __pycache__/
-*.py[cod]
-*.so
-.venv/
-venv/
-env/
-ENV/
-.pytest_cache/
-.coverage
-htmlcov/
-*.egg-info/
-
-# Environment variables (keep *.env.example tracked)
-.env
-.env.local
-.env.*.local
-
-# Databases
 *.db
-*.sqlite3
-backend/netsage.db*
-
-# IDE / Editor
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
+.env
+venv/
