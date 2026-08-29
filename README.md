@@ -123,3 +123,15 @@ npm run build
 - [`docs/packet-tracer-integration.md`](docs/packet-tracer-integration.md) — Packet Tracer integration guide
 - [`backend/README.md`](backend/README.md) / [`frontend/README.md`](frontend/README.md) — per-app details
 
+- # NetSage AI Backend
+
+AI-assisted Cisco network troubleshooting for Packet Tracer labs.
+
+## Architecture
+FastAPI → SQLite → Rule Engine → OpenAI → Human Review
+
+## Install
+```bash
+pip install -r requirements.txt
+cp .env.example .env
+
