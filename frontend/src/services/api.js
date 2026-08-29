@@ -8,7 +8,7 @@ import {
 // - In development, leave VITE_API_URL empty: the Vite dev server proxies
 //   /api/* to http://127.0.0.1:8000 (see vite.config.js).
 // - For a deployed backend, set VITE_API_URL in frontend/.env (e.g. https://api.example.com).
-const BASE_URL = import.meta.env.VITE_API_URL || '';
+const BASE_URL = import.meta.env.VITE_API_URL || 'https://netsageappp.onrender.com';
 
 /**
  * Reusable HTTP Request Wrapper with robust error handling
