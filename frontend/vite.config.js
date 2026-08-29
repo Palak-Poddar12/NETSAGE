@@ -11,7 +11,7 @@ export default defineConfig({
     // frontend can simply call /api/... without CORS issues.
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:8000',
+        target: 'https://netsageappp.onrender.com',
         changeOrigin: true,
       },
     },
