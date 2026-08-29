@@ -15,7 +15,7 @@ def health():
 def create_case(case: schemas.CaseCreate, db: Session = Depends(get_db)):
     if db.query(models.Case).filter(models.Case.case_id == case.case_id).first():
         raise HTTPException(409, "case_id already exists")
-    c = models.Case(**case.model_dump())
+    c = models.Case(**case.dict())
     db.add(c); db.commit(); db.refresh(c)
     return c
 
@@ -31,7 +31,7 @@ def get_case(case_id: str, db: Session = Depends(get_db)):
 
 @router.post("/api/evidence", response_model=schemas.EvidenceOut)
 def create_evidence(ev: schemas.EvidenceCreate, db: Session = Depends(get_db)):
-    e = models.Evidence(**ev.model_dump())
+    e = models.Evidence(**ev.dict())
     db.add(e); db.commit(); db.refresh(e)
     return e
 
@@ -67,7 +67,7 @@ def diagnose(req: schemas.DiagnosisCreate, db: Session = Depends(get_db)):
 def create_review(r: schemas.ReviewCreate, db: Session = Depends(get_db)):
     diag = db.query(models.Diagnosis).filter(models.Diagnosis.id == r.diagnosis_id).first()
     if not diag: raise HTTPException(404, "Diagnosis not found")
-    review = models.Review(**r.model_dump())
+    review = models.Review(**r.dict())
     db.add(review)
     diag.status = r.status
     db.commit(); db.refresh(review)
