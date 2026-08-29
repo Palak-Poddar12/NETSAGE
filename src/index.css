@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-800 font-sans tracking-tight dark:bg-[#090e17] dark:text-slate-100 transition-colors duration-200;
+  }
+}
+
+/* Custom Friendly Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #1e293b;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Modern Monospace Terminal Code Blocks */
+.cisco-terminal {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  background-color: #0f172a;
+  color: #38bdf8;
+  border: 1px solid #1e293b;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  overflow-x: auto;
+  line-height: 1.6;
+  font-size: 0.8125rem;
+}
+
+.dark .cisco-terminal {
+  background-color: #080c14;
+  border-color: #1e293b;
+}
